@@ -8,6 +8,25 @@
 </head>
 <body>
   <h1>Биоритмы</h1>
+  <div class="action-buttons">
+    <button id="show-correlation" class="action-btn">Показать корреляцию</button>
+    <button id="show-recommendations" class="action-btn">Рекомендации на сегодня</button>
+  </div>
+<div id="correlation-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Корреляция биоритмов</h2>
+    <div id="correlation-content" class="modal-scrollable"></div>
+  </div>
+</div>
+
+<div id="recommendations-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Рекомендации на сегодня</h2>
+    <div id="recommendations-content" class="modal-scrollable"></div>
+  </div>
+</div>
   <label>На какую дату показать биоритмы:
       <input type="date" id="target-date" />
     </label>

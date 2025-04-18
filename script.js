@@ -383,5 +383,304 @@ document.getElementById('clear-people').addEventListener('click', () => {
     setTimeout(() => btn.classList.remove('shake'), 500);
   });
 
+// Функция для анализа корреляции биоритмов
+function analyzeCorrelation() {
+    const targetDate = new Date(dateInput.value);
+    const selectedPeople = people.filter(person => 
+        document.querySelector(`.person-checkbox[value="${person.id}"]`).checked
+    );
+    
+    const selectedBiorhythms = biorhythmTypes.filter(type => 
+        document.querySelector(`.biorhythm-type[value="${type.id}"]`).checked
+    );
+    
+    if (selectedPeople.length < 2 || selectedBiorhythms.length === 0) {
+        return "Выберите как минимум двух человек и хотя бы один тип биоритма для анализа корреляции.";
+    }
+    
+    const daysPassed = selectedPeople.map(person => 
+        calculateDays(person.birthday, targetDate)
+    );
+    
+    const results = [];
+    const threshold = 0.2; // Порог для определения совпадения (20%)
+    
+    // Анализируем все возможные пары людей
+    for (let i = 0; i < selectedPeople.length; i++) {
+        for (let j = i + 1; j < selectedPeople.length; j++) {
+            const person1 = selectedPeople[i];
+            const person2 = selectedPeople[j];
+            
+            selectedBiorhythms.forEach(biorhythm => {
+                const value1 = calculateBiorhythm(daysPassed[i], biorhythm.cycle);
+                const value2 = calculateBiorhythm(daysPassed[j], biorhythm.cycle);
+                const diff = Math.abs(value1 - value2);
+                
+                if (diff <= threshold) {
+                    const similarity = Math.round((1 - diff) * 100);
+                    const avgValue = (value1 + value2) / 2;
+                    
+                    let advice = "";
+                    
+if (biorhythm.id === 'physical') {
+    if (avgValue > 0.7) {
+        advice = `💪 Идеальный день для совместного ЗОЖ:\n` +
+                `- Включите онлайн-тренировку (например, HIIT)\n` +
+                `- Синхронно сделайте комплекс йоги по видео\n` +
+                `- Устройте челлендж по количеству шагов (минимум 10к)\n`
+    } else if (avgValue > 0.3) {
+        advice = `👍 Хороший день для активности:\n` +
+                `- Совместная утренняя зарядка\n` +
+                `- Прогулка в парке с аудиокнигой (обсудите потом)\n` +
+                `- Разминка каждые 2 часа во время работы\n` 
+    } else if (avgValue < -0.7) {
+        advice = `🛌 День восстановления:\n` +
+                `- Сделайте дыхательные упражнения вместе\n` +
+                `- Примите контрастный душ (договоритесь о времени)\n`
+    }
+} 
+else if (biorhythm.id === 'emotional') {
+    if (avgValue > 0.7) {
+        advice = `❤️ Максимальная эмоциональная связь:\n` +
+                `- Проведите "сердечный круг": по очереди делитесь тем, что сейчас чувствуете\n`;
+    } else if (avgValue > 0.3) {
+        advice = `😊 Поддержка и развитие:\n` +
+                `- Обменяйтесь комплиментами в голосовых\n`
+    } else if (avgValue < -0.7) {
+        advice = `🧘‍♀️ Энергии мало - берегите себя:\n` +
+                `- Послушайте одинаковый плейлист для релакса\n` 
+    }
+} 
+else if (biorhythm.id === 'intellectual') {
+    if (avgValue > 0.7) {
+        advice = `🚀 Пик продуктивности для учебы:\n` +
+                `- Совместный coding session (VS Code Live Share)\n` +
+                `- Разберите сложную тему по фронтенду\n` +
+                `- Решите 3 задачи на LeetCode вместе`;
+    } else if (avgValue > 0.3) {
+        advice = `📚 Хорошо для обучения:\n` +
+                `- Сделайте конспект по новому материалу\n` +
+                `- Повторите грамматику английского`;
+    } else if (avgValue < -0.7) {
+        advice = `🎓 Легкая учеба:\n` +
+                `- Повторите базовые концепции фронтенда\n` +
+                `- Сыграйте в "Алиас" с техническими терминами\n` +
+                `- Послушайте подкаст о разработке во время прогулки`;
+    }
+}
+
+// Общие рекомендации для нейтральных дней
+if (avgValue >= -0.3 && avgValue <= 0.3) {
+    advice = `⚖️ Баланс для системного роста:\n` +
+            `- Обновите трекер привычек\n` +
+            `- Запланируйте учебные цели на месяц\n` +
+            `- Сделайте обзор своих проектов на GitHub`;
+}
+
+// Добавляем анти-дофаминовые советы
+if (avgValue < -0.5) {
+    advice += `🚫 Избегайте сегодня:\n` +
+              `- Бесцельного скроллинга соцсетей\n` +
+              `- Мультитаскинга без четкой цели`;
+}
+                    
+                    results.push({
+                        person1: person1.name,
+                        person2: person2.name,
+                        biorhythm: biorhythm.name,
+                        similarity: similarity,
+                        value1: Math.round(value1 * 100),
+                        value2: Math.round(value2 * 100),
+                        advice: advice
+                    });
+                }
+            });
+        }
+    }
+    
+    return results;
+}
+
+// Функция для генерации рекомендаций
+function generateRecommendations() {
+    const targetDate = new Date(dateInput.value);
+    const selectedPeople = people.filter(person => 
+        document.querySelector(`.person-checkbox[value="${person.id}"]`).checked
+    );
+    
+    const selectedBiorhythms = biorhythmTypes.filter(type => 
+        document.querySelector(`.biorhythm-type[value="${type.id}"]`).checked
+    );
+    
+    if (selectedPeople.length === 0 || selectedBiorhythms.length === 0) {
+        return "Выберите хотя бы одного человека и один тип биоритма для получения рекомендаций.";
+    }
+    
+    const recommendations = [];
+    
+    selectedPeople.forEach(person => {
+        const daysPassed = calculateDays(person.birthday, targetDate);
+        const personRecommendations = [];
+        
+        selectedBiorhythms.forEach(biorhythm => {
+            const value = calculateBiorhythm(daysPassed, biorhythm.cycle);
+            const percent = Math.round(value * 100);
+            
+            let recommendation = "";
+            let emoji = "";
+            
+            if (biorhythm.id === 'physical') {
+                if (percent > 70) {
+                    recommendation = `Идеальный день для физической активности! Запланируйте тренировку, пробежку или активный отдых.`;
+                    emoji = "💪";
+                } else if (percent > 30) {
+                    recommendation = `Хороший день для умеренных физических нагрузок.`;
+                    emoji = "👍";
+                } else if (percent > -30) {
+                    recommendation = `Физическая энергия на среднем уровне. Делайте перерывы в работе.`;
+                    emoji = "😐";
+                } else if (percent > -70) {
+                    recommendation = `Физическая энергия низкая. Избегайте интенсивных нагрузок.`;
+                    emoji = "😕";
+                } else {
+                    recommendation = `Критически низкий уровень физической энергии. Отдохните и восстановитесь.`;
+                    emoji = "😫";
+                }
+            } 
+            else if (biorhythm.id === 'emotional') {
+                if (percent > 70) {
+                    recommendation = `Эмоциональный подъем! Отличный день для общения, творчества и новых знакомств.`;
+                    emoji = "😊";
+                } else if (percent > 30) {
+                    recommendation = `Стабильное эмоциональное состояние. Хорошее время для важных разговоров.`;
+                    emoji = "🙂";
+                } else if (percent > -30) {
+                    recommendation = `Эмоции нейтральные. Избегайте принятия важных решений на эмоциях.`;
+                    emoji = "😐";
+                } else if (percent > -70) {
+                    recommendation = `Эмоциональный спад. Будьте осторожны в общении, возможна раздражительность.`;
+                    emoji = "😞";
+                } else {
+                    recommendation = `Глубокий эмоциональный кризис. Сегодня лучше побыть в одиночестве.`;
+                    emoji = "😢";
+                }
+            } 
+            else if (biorhythm.id === 'intellectual') {
+                if (percent > 70) {
+                    recommendation = `Пик интеллектуальной активности! Решайте сложные задачи, учитесь, творите.`;
+                    emoji = "🧠";
+                } else if (percent > 30) {
+                    recommendation = `Хороший день для умственной работы. Планируйте важные встречи.`;
+                    emoji = "🤔";
+                } else if (percent > -30) {
+                    recommendation = `Средний уровень интеллектуальной энергии. Рутинная работа.`;
+                    emoji = "📝";
+                } else if (percent > -70) {
+                    recommendation = `Интеллектуальный спад. Избегайте сложных задач и принятия решений.`;
+                    emoji = "😴";
+                } else {
+                    recommendation = `Критически низкий уровень интеллектуальной энергии. Отдых для мозга.`;
+                    emoji = "🛌";
+                }
+            }
+            
+            personRecommendations.push({
+                biorhythm: biorhythm.name,
+                percent: percent,
+                recommendation: recommendation,
+                emoji: emoji
+            });
+        });
+        
+        recommendations.push({
+            person: person.name,
+            recommendations: personRecommendations
+        });
+    });
+    
+    return recommendations;
+}
+
+// Функция для отображения корреляции в модальном окне
+function showCorrelationModal() {
+    const correlationData = analyzeCorrelation();
+    const modal = document.getElementById('correlation-modal');
+    const content = document.getElementById('correlation-content');
+    
+    // Прокручиваем вверх перед открытием
+    content.scrollTop = 0;
+    
+    if (typeof correlationData === 'string') {
+        content.innerHTML = `<p>${correlationData}</p>`;
+    } else if (correlationData.length === 0) {
+        content.innerHTML = `<p>Нет значительной корреляции между выбранными биоритмами.</p>`;
+    } else {
+        let html = '';
+        correlationData.forEach(item => {
+            html += `
+                <div class="correlation-item">
+                   <h3>
+  <span style="color: #d5a2ff">${item.person1} (${item.value1}%)</span> 
+  <span> и </span> 
+  <span style="color: #d5a2ff">${item.person2} (${item.value2}%)</span>
+</h3>
+                    <p><strong>${item.biorhythm} биоритм:</strong> совпадение на ${item.similarity}%</p>
+                    <div class="advice">${item.advice.replace(/\n/g, '<br>')}</div>
+                </div>
+            `;
+        });
+        content.innerHTML = html;
+    }
+    
+    modal.style.display = 'block';
+}
+
+function showRecommendationsModal() {
+    const recommendationsData = generateRecommendations();
+    const modal = document.getElementById('recommendations-modal');
+    const content = document.getElementById('recommendations-content');
+    
+    // Прокручиваем вверх перед открытием
+    content.scrollTop = 0;
+    
+    if (typeof recommendationsData === 'string') {
+        content.innerHTML = `<p>${recommendationsData}</p>`;
+    } else {
+        let html = '';
+        recommendationsData.forEach(person => {
+            html += `<h3 style="color: #d5a2ff">${person.person}</h3>`; // Используем основной цвет текста
+            person.recommendations.forEach(rec => {
+                html += `
+                    <div class="recommendation-item">
+                        <p>
+                            <strong style="color: ${rec.color}">${rec.biorhythm} биоритм: ${rec.percent}%</strong> 
+                            ${rec.emoji}
+                        </p>
+                        <p>${rec.recommendation}</p>
+                    </div>
+                `;
+            });
+        });
+        content.innerHTML = html;
+    }
+    
+    modal.style.display = 'block';
+}
+// Обработчики для модальных окон
+document.getElementById('show-correlation').addEventListener('click', showCorrelationModal);
+document.getElementById('show-recommendations').addEventListener('click', showRecommendationsModal);
+
+document.querySelectorAll('.close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', function() {
+        this.closest('.modal').style.display = 'none';
+    });
+});
+
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+    }
+});
+
 // Первоначальная отрисовка
 drawGraph();
