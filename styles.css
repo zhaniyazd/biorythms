@@ -227,14 +227,41 @@ canvas {
   transition: all 0.2s;
 }
 
-.clear-btn:hover {
-  color: #f0f0f0;
-  background-color: #d5a2ff33;
+.graph-wrapper {
+  width: 100%;
+  max-width: 1600px; 
+  margin: 0 auto;
+  padding-left: 1rem; 
 }
 
-.clear-btn svg {
-  vertical-align: middle;
+.graph-toolbar {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
 }
+
+.corner-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #d5a2ff;
+  font-size: 16px;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.corner-btn:hover {
+  background-color: #d5a2ff33;
+  color: #ffffff;
+}
+
+#biorhythm-chart {
+  width: 100%;
+  display: block;
+  border-radius: 12px;
+}
+
 
 /* Анимация встряски */
 @keyframes shake {
@@ -290,13 +317,6 @@ canvas {
     position: relative;
   }
   
-  .clear-btn {
-    position: absolute;
-    right: 0;
-    top: 0;
-    margin-left: 0;
-  }
-  
   .people-controls .checkboxes {
     margin-right: 2rem;
   }
@@ -313,14 +333,6 @@ canvas {
     max-width: 200px;
   }
 }
-/* Удалите старые стили для .action-buttons и добавьте новые: */
-
-.top-actions {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-}
 
 .action-buttons {
     position: absolute;
@@ -328,7 +340,6 @@ canvas {
     flex-direction: column;
     top: 20px;
     right: 20px;
-    display: flex;
     gap: 10px;
     z-index: 100;
 }

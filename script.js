@@ -91,6 +91,31 @@ const people = [
     }
 ];
   
+
+const supportPhrases = {
+  physical: [
+      "точно замотивируют на спорт!",
+      "могут затащить на пробежку 💨",
+      "поддержат на утренней тренировке",
+      "вдохновят на физическую активность",
+      "помогут взбодриться и размяться"
+  ],
+  emotional: [
+      "подарят позитив и поддержку",
+      "поднимут настроение 💫",
+      "зажгут на душевный разговор",
+      "создадут тёплую атмосферу рядом",
+      "помогут почувствовать себя лучше"
+  ],
+  intellectual: [
+      "помогут решить задачки 🧩",
+      "втащат в совместное обучение",
+      "подскажут нестандартное решение",
+      "могут объяснить сложную тему",
+      "точно настроят на продуктивность"
+  ]
+};
+
 const biorhythmTypes = [
     { id: 'physical', name: 'Физический', cycle: 23 },
     { id: 'emotional', name: 'Эмоциональный', cycle: 28 },
@@ -383,6 +408,19 @@ document.getElementById('clear-people').addEventListener('click', () => {
     setTimeout(() => btn.classList.remove('shake'), 500);
   });
 
+  document.getElementById('show-all-people').addEventListener('click', () => {
+    document.querySelectorAll('.person-checkbox').forEach(checkbox => {
+      checkbox.checked = true;
+    });
+    drawGraph();
+  
+    // Анимация кнопки (аналогично как у clear)
+    const btn = document.getElementById('show-all-people');
+    btn.classList.add('shake');
+    setTimeout(() => btn.classList.remove('shake'), 500);
+  });
+  
+
 // Функция для анализа корреляции биоритмов
 function analyzeCorrelation() {
     const targetDate = new Date(dateInput.value);
@@ -517,86 +555,126 @@ function generateRecommendations() {
     }
     
     const recommendations = [];
+    // Собираем данные по всем людям и биоритмам
+const allData = selectedPeople.map(person => {
+  const daysPassed = calculateDays(person.birthday, targetDate);
+  const rhythms = {};
+  selectedBiorhythms.forEach(bio => {
+      rhythms[bio.id] = {
+          value: calculateBiorhythm(daysPassed, bio.cycle),
+          percent: Math.round(calculateBiorhythm(daysPassed, bio.cycle) * 100)
+      };
+  });
+  return {
+      name: person.name,
+      id: person.id,
+      rhythms: rhythms
+  };
+});
     
-    selectedPeople.forEach(person => {
-        const daysPassed = calculateDays(person.birthday, targetDate);
-        const personRecommendations = [];
-        
-        selectedBiorhythms.forEach(biorhythm => {
-            const value = calculateBiorhythm(daysPassed, biorhythm.cycle);
-            const percent = Math.round(value * 100);
-            
-            let recommendation = "";
-            let emoji = "";
-            
-            if (biorhythm.id === 'physical') {
-                if (percent > 70) {
-                    recommendation = `Идеальный день для физической активности! Запланируйте тренировку, пробежку или активный отдых.`;
-                    emoji = "💪";
-                } else if (percent > 30) {
-                    recommendation = `Хороший день для умеренных физических нагрузок.`;
-                    emoji = "👍";
-                } else if (percent > -30) {
-                    recommendation = `Физическая энергия на среднем уровне. Делайте перерывы в работе.`;
-                    emoji = "😐";
-                } else if (percent > -70) {
-                    recommendation = `Физическая энергия низкая. Избегайте интенсивных нагрузок.`;
-                    emoji = "😕";
-                } else {
-                    recommendation = `Критически низкий уровень физической энергии. Отдохните и восстановитесь.`;
-                    emoji = "😫";
-                }
-            } 
-            else if (biorhythm.id === 'emotional') {
-                if (percent > 70) {
-                    recommendation = `Эмоциональный подъем! Отличный день для общения, творчества и новых знакомств.`;
-                    emoji = "😊";
-                } else if (percent > 30) {
-                    recommendation = `Стабильное эмоциональное состояние. Хорошее время для важных разговоров.`;
-                    emoji = "🙂";
-                } else if (percent > -30) {
-                    recommendation = `Эмоции нейтральные. Избегайте принятия важных решений на эмоциях.`;
-                    emoji = "😐";
-                } else if (percent > -70) {
-                    recommendation = `Эмоциональный спад. Будьте осторожны в общении, возможна раздражительность.`;
-                    emoji = "😞";
-                } else {
-                    recommendation = `Глубокий эмоциональный кризис. Сегодня лучше побыть в одиночестве.`;
-                    emoji = "😢";
-                }
-            } 
-            else if (biorhythm.id === 'intellectual') {
-                if (percent > 70) {
-                    recommendation = `Пик интеллектуальной активности! Решайте сложные задачи, учитесь, творите.`;
-                    emoji = "🧠";
-                } else if (percent > 30) {
-                    recommendation = `Хороший день для умственной работы. Планируйте важные встречи.`;
-                    emoji = "🤔";
-                } else if (percent > -30) {
-                    recommendation = `Средний уровень интеллектуальной энергии. Рутинная работа.`;
-                    emoji = "📝";
-                } else if (percent > -70) {
-                    recommendation = `Интеллектуальный спад. Избегайте сложных задач и принятия решений.`;
-                    emoji = "😴";
-                } else {
-                    recommendation = `Критически низкий уровень интеллектуальной энергии. Отдых для мозга.`;
-                    emoji = "🛌";
-                }
+selectedPeople.forEach(person => {
+  const personData = allData.find(p => p.id === person.id);
+  const personRecommendations = [];
+
+  selectedBiorhythms.forEach(biorhythm => {
+      const value = personData.rhythms[biorhythm.id].value;
+      const percent = personData.rhythms[biorhythm.id].percent;
+
+      let recommendation = "";
+      let emoji = "";
+
+      if (biorhythm.id === 'physical') {
+          if (percent > 70) {
+              recommendation = `Идеальный день для физической активности! Запланируйте тренировку, пробежку или активный отдых.`;
+              emoji = "💪";
+          } else if (percent > 30) {
+              recommendation = `Хороший день для умеренных физических нагрузок.`;
+              emoji = "👍";
+          } else if (percent > -30) {
+              recommendation = `Физическая энергия на среднем уровне. Делайте перерывы в работе.`;
+              emoji = "😐";
+          } else if (percent > -70) {
+              recommendation = `Физическая энергия низкая. Избегайте интенсивных нагрузок.`;
+              emoji = "😕";
+          } else {
+              recommendation = `Критически низкий уровень физической энергии. Отдохните и восстановитесь.`;
+              emoji = "😫";
+          }
+      } 
+      else if (biorhythm.id === 'emotional') {
+          if (percent > 70) {
+              recommendation = `Эмоциональный подъем! Отличный день для общения, творчества и новых знакомств.`;
+              emoji = "😊";
+          } else if (percent > 30) {
+              recommendation = `Стабильное эмоциональное состояние. Хорошее время для важных разговоров.`;
+              emoji = "🙂";
+          } else if (percent > -30) {
+              recommendation = `Эмоции нейтральные. Избегайте принятия важных решений на эмоциях.`;
+              emoji = "😐";
+          } else if (percent > -70) {
+              recommendation = `Эмоциональный спад. Будьте осторожны в общении, возможна раздражительность.`;
+              emoji = "😞";
+          } else {
+              recommendation = `Глубокий эмоциональный кризис. Сегодня лучше побыть в одиночестве.`;
+              emoji = "😢";
+          }
+      } 
+      else if (biorhythm.id === 'intellectual') {
+          if (percent > 70) {
+              recommendation = `Пик интеллектуальной активности! Решайте сложные задачи, учитесь, творите.`;
+              emoji = "🧠";
+          } else if (percent > 30) {
+              recommendation = `Хороший день для умственной работы. Планируйте важные встречи.`;
+              emoji = "🤔";
+          } else if (percent > -30) {
+              recommendation = `Средний уровень интеллектуальной энергии. Рутинная работа.`;
+              emoji = "📝";
+          } else if (percent > -70) {
+              recommendation = `Интеллектуальный спад. Избегайте сложных задач и принятия решений.`;
+              emoji = "😴";
+          } else {
+              recommendation = `Критически низкий уровень интеллектуальной энергии. Отдых для мозга.`;
+              emoji = "🛌";
+          }
+      }
+
+      if (percent < -30) {
+        const helpers = allData.filter(other =>
+            other.id !== person.id &&
+            other.rhythms[biorhythm.id].percent > 50
+        ).map(h => h.name);
+    
+        if (helpers.length > 0) {
+            const phrasePool = supportPhrases[biorhythm.id];
+            const phrase = phrasePool[Math.floor(Math.random() * phrasePool.length)];
+    
+            let helperText = "";
+            if (helpers.length === 1) {
+                helperText = `${helpers[0]} ${phrase}.`;
+            } else {
+                const last = helpers.pop();
+                const names = helpers.join(', ') + ' и ' + last;
+                helperText = `${names} ${phrase}`;
             }
-            
-            personRecommendations.push({
-                biorhythm: biorhythm.name,
-                percent: percent,
-                recommendation: recommendation,
-                emoji: emoji
-            });
-        });
-        
-        recommendations.push({
-            person: person.name,
-            recommendations: personRecommendations
-        });
-    });
+    
+            recommendation += " " + helperText;
+        }
+    }
+    
+
+      personRecommendations.push({
+          biorhythm: biorhythm.name,
+          percent: percent,
+          recommendation: recommendation,
+          emoji: emoji
+      });
+  });
+
+  recommendations.push({
+      person: person.name,
+      recommendations: personRecommendations
+  });
+});
     
     return recommendations;
 }
